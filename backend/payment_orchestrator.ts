@@ -5,7 +5,7 @@ import { URL } from 'url';
 // 1. DOMÍNIO E INTERFACES (Contratos)
 // ==========================================
 export interface PaymentRequest {
-  amount: number;
+  amount: number;;
   currency: string;
   method: 'CREDIT_CARD' | 'PIX';
   cardNumber?: string;
