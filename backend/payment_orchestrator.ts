@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
 import { performance } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
-import { URL } from 'node:url';34232
+import { URL } from 'node:url';
 
 // ==========================================
 // 1. DOMÍNIO E INTERFACES (Contratos)
