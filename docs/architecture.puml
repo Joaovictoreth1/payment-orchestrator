@@ -1,0 +1,26 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!pragma layout smetana
+LAYOUT_LEFT_RIGHT()
+title Payment Orchestrator — mock payment flow
+
+Person(operator, "Demo operator", "Simulates a payment without real card data")
+
+System_Boundary(system, "Payment Orchestrator") {
+  Container(dashboard, "Dashboard", "React in browser", "Submits fictional payments and shows gateway attempts")
+  Container_Boundary(api, "Mock payment service (Node.js)") {
+    Component(http, "HTTP API", "TypeScript · node:http", "Serves the dashboard and validates simulation requests")
+    Component(cache, "Idempotency store", "Bounded in-memory Map", "Coalesces identical requests and caches results")
+    Component(processor, "Payment orchestrator", "TypeScript", "Enforces deadlines, tracks circuits and routes attempts")
+    Component(mock, "Gateway simulators", "Stripe-like and Pagar.me-like mocks", "Simulate approvals, declines and technical failures; no outbound calls")
+  }
+}
+
+Rel(operator, dashboard, "Uses")
+Rel(dashboard, http, "Submits simulation", "HTTP / JSON")
+Rel(http, cache, "Reserves and replays keys")
+Rel(http, processor, "Executes a validated payment")
+Rel(processor, mock, "Calls local mock adapters")
+@enduml
