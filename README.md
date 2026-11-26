@@ -57,6 +57,12 @@ docker compose down
 
 ## Request a simulation
 
+The dashboard keeps the latest 25 completed simulations in the current page.
+Filter by method or result and expand a row to inspect its gateway attempts.
+The history is not persisted. If the response is interrupted, **Tentar
+novamente** sends the same request with the original idempotency key. Discarding
+that attempt clears the dashboard's retry state, not the server's result.
+
 ```sh
 curl -i http://127.0.0.1:3000/api/v1/payments/process \
   -H 'Content-Type: application/json' \
