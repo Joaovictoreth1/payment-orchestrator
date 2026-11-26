@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+    environment:
+      POSTGRES_USER: payment
+      POSTGRES_DB: payment
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a random hex password in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U payment -d payment"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    volumes:
+      - payments:/var/lib/postgresql/data
+
+  migrate:
+    image: postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set a random hex password in .env}
+    command:
+      [
+        "psql",
+        "-h",
+        "db",
+        "-U",
+        "payment",
+        "-d",
+        "payment",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-1",
+        "-f",
+        "/migrations/001_payment_idempotency.sql",
+      ]
+    volumes:
+      - ./db/migrations:/migrations:ro
+
+  app:
+    build: .
+    init: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      HOST: 0.0.0.0
+      PAYMENT_MODE: ${PAYMENT_MODE:?Set PAYMENT_MODE=simulation}
+      PAYMENT_API_KEY: ${PAYMENT_API_KEY:?Set a random API key in .env}
+      PAYMENT_REQUESTS_PER_SECOND: ${PAYMENT_REQUESTS_PER_SECOND:-30}
+      PAYMENT_MAX_INFLIGHT: ${PAYMENT_MAX_INFLIGHT:-32}
+      DATABASE_URL: postgresql://payment:${POSTGRES_PASSWORD:?Set a random hex password in .env}@db:5432/payment?sslmode=disable
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/ready').then(r=>{if(!r.ok)process.exitCode=1}).catch(()=>{process.exitCode=1})",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  payments:
