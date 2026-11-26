@@ -19,9 +19,13 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "24.19.4",
-    "eslint": "10.13.0",
+    "@types/pg": "8.23.1",
+    "eslint": "10.15.0",
     "prettier": "3.10.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.74.0"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
   }
 }
