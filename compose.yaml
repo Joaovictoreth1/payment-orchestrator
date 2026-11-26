@@ -1,0 +1,5 @@
+services:
+  payment-orchestrator:
+    build: .
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"

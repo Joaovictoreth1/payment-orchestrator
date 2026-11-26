@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Build and smoke test Docker image
+        run: |
+          docker compose up -d --build --wait
+          curl --fail --silent --show-error http://127.0.0.1:3000/health
+          curl --fail --silent --show-error http://127.0.0.1:3000/ | grep -q 'Laboratório de pagamentos'
+          curl --fail --silent --show-error http://127.0.0.1:3000/assets/dashboard.js --output /dev/null
+      - if: always()
+        run: docker compose down
