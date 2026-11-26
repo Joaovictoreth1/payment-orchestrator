@@ -1,0 +1,27 @@
+{
+  "name": "payment-orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-reporter=spec 'test/*.test.ts'",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include='backend/payment_orchestrator.ts' --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95 'test/*.test.ts'",
+    "start": "node --env-file-if-exists=.env dist/main.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.4",
+    "eslint": "10.13.0",
+    "prettier": "3.10.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.74.0"
+  }
+}
