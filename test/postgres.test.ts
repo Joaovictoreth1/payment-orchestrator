@@ -71,27 +71,37 @@ test(
     );
     await storeA.check();
 
+    const raceKey = randomUUID();
+    const fingerprint = "a".repeat(64);
+    const competingClaims = await Promise.all([
+      storeA.claim(raceKey, fingerprint),
+      storeB.claim(raceKey, fingerprint),
+    ]);
+    assert.deepEqual(competingClaims.map(({ kind }) => kind).sort(), [
+      "acquired",
+      "pending",
+    ]);
+
     const entered = Promise.withResolvers<undefined>();
     const outcome = Promise.withResolvers<GatewayOutcome>();
     let gatewayCalls = 0;
-    const orchestrator = new PaymentOrchestrator(
-      [
-        {
-          name: "fixture-primary",
-          process: () => {
-            gatewayCalls += 1;
-            entered.resolve(undefined);
-            return outcome.promise;
-          },
-        },
-      ],
-      { timeoutMs: 5_000, cooldownMs: 20, failureThreshold: 2 },
-    );
+    const gateway = {
+      name: "fixture-primary",
+      process: () => {
+        gatewayCalls += 1;
+        entered.resolve(undefined);
+        return outcome.promise;
+      },
+    };
 
     async function start(store: IdempotencyStore) {
       const { server } = createPaymentServer({
         store,
-        orchestrator,
+        orchestrator: new PaymentOrchestrator([gateway], {
+          timeoutMs: 5_000,
+          cooldownMs: 20,
+          failureThreshold: 2,
+        }),
         apiKey,
         requestsPerSecond: 200,
         maxInflight: 32,

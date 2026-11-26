@@ -1,0 +1,48 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+        env:
+          POSTGRES_USER: payment_test
+          POSTGRES_PASSWORD: ephemeral-ci-test-only
+          POSTGRES_DB: payment_test
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U payment_test -d payment_test"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+      - run: make setup
+      - run: make check
+        env:
+          TEST_DATABASE_URL: postgresql://payment_test:ephemeral-ci-test-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/payment_test
+      - name: Start built container and smoke-test the deployed API
+        run: |
+          umask 077
+          sed -e "s/^PAYMENT_API_KEY=$/PAYMENT_API_KEY=$(openssl rand -hex 32)/" \
+              -e "s/^POSTGRES_PASSWORD=$/POSTGRES_PASSWORD=$(openssl rand -hex 32)/" .env.example > .env
+          make up
+          make smoke
+      - name: Stop containers
+        if: always() && hashFiles('.env') != ''
+        run: docker compose down --volumes

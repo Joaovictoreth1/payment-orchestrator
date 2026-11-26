@@ -8,13 +8,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "lint": "eslint .",
+    "lint": "eslint --max-warnings=0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "node --test --test-reporter=spec 'test/*.test.ts'",
-    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include='backend/payment_orchestrator.ts' --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95 'test/*.test.ts'",
-    "start": "node --env-file-if-exists=.env dist/main.js"
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include='backend/*.ts' --test-coverage-exclude='backend/main.ts' --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95 'test/*.test.ts'",
+    "start": "node --env-file-if-exists=.env dist/main.js",
+    "smoke": "node --env-file-if-exists=.env scripts/smoke.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

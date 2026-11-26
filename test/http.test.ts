@@ -31,17 +31,15 @@ const gatewayOptions = {
   failureThreshold: 3,
   cooldownMs: 200,
 };
-const simulator = new PaymentOrchestrator(
-  [createSimulator("primary"), createSimulator("fallback")],
-  gatewayOptions,
-);
-
 type Overrides = Partial<Parameters<typeof createPaymentServer>[0]>;
 
 async function start(t: TestContext, overrides: Overrides = {}) {
   const { server, drain } = createPaymentServer({
     store: defaultStore,
-    orchestrator: simulator,
+    orchestrator: new PaymentOrchestrator(
+      [createSimulator("primary"), createSimulator("fallback")],
+      gatewayOptions,
+    ),
     apiKey,
     requestsPerSecond: 100,
     maxInflight: 16,

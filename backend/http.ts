@@ -8,7 +8,8 @@ import { ApiError, parsePayment, processPayment } from "./payments.ts";
 
 const paymentRoute = "/api/v1/payments/process";
 const maxBodyBytes = 16 * 1024;
-const jsonMediaType = /^application\/json(?:\s*;\s*charset\s*=\s*"?utf-8"?)?$/i;
+const jsonMediaType =
+  /^application\/json(?:\s*;\s*charset\s*=\s*(?:utf-8|"utf-8"))?$/i;
 
 function digest(value: string): Buffer {
   return createHash("sha256").update(value).digest();

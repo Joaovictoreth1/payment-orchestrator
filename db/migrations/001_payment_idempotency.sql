@@ -16,3 +16,7 @@ CREATE TABLE IF NOT EXISTS payment_idempotency (
         )
     )
 );
+
+CREATE INDEX IF NOT EXISTS payment_idempotency_pending_created_at
+    ON payment_idempotency (created_at)
+    WHERE completed_at IS NULL;

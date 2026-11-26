@@ -13,5 +13,5 @@
     "rewriteRelativeImportExtensions": true,
     "types": ["node"]
   },
-  "include": ["backend/**/*.ts", "test/**/*.ts"]
+  "include": ["backend/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"]
 }

@@ -1,0 +1,8 @@
+**
+!Dockerfile
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.build.json
+!backend/
+!backend/**
